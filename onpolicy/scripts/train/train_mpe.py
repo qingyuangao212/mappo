@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 import sys
 import os
 import wandb
@@ -165,3 +166,4 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+

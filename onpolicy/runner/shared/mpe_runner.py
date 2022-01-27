@@ -101,24 +101,33 @@ class MPERunner(Runner):
                             np.concatenate(self.buffer.rnn_states[step]),
                             np.concatenate(self.buffer.rnn_states_critic[step]),
                             np.concatenate(self.buffer.masks[step]))
+        # print('\n', step)
+        # print("shapes:========")
+        # print(value.shape)
+        # print(action.shape)
+        # print(action_log_prob.shape)
+        # print(rnn_states.shape)
+        # print(rnn_states_critic.shape)
         # [self.envs, agents, dim]
         values = np.array(np.split(_t2n(value), self.n_rollout_threads))
         actions = np.array(np.split(_t2n(action), self.n_rollout_threads))
         action_log_probs = np.array(np.split(_t2n(action_log_prob), self.n_rollout_threads))
         rnn_states = np.array(np.split(_t2n(rnn_states), self.n_rollout_threads))
         rnn_states_critic = np.array(np.split(_t2n(rnn_states_critic), self.n_rollout_threads))
+
         # rearrange action
-        if self.envs.action_space[0].__class__.__name__ == 'MultiDiscrete':
-            for i in range(self.envs.action_space[0].shape):
-                uc_actions_env = np.eye(self.envs.action_space[0].high[i] + 1)[actions[:, :, i]]
+        if self.envs.action_space[0].__class__.__name__ == 'MultiDiscrete':     # action_space has dim (n_agents, (action_space)), for instance(2, 4, 9)
+            for i in range(self.envs.action_space[0].shape):    # i in range(2): action_space_dimension
+                uc_actions_env = np.eye(self.envs.action_space[0].high[i] + 1)[actions[:, :, i]]     # broadcasting: n_threads * n_agents * 5
                 if i == 0:
-                    actions_env = uc_actions_env
+                    actions_env = uc_actions_env    # n_threads * n_agents * 5
                 else:
-                    actions_env = np.concatenate((actions_env, uc_actions_env), axis=2)
+                    actions_env = np.concatenate((actions_env, uc_actions_env), axis=2)  # concat n_threads * n_agents * 5 with n_threads * n_agents * 10 = n_threads * n_agents * 15
         elif self.envs.action_space[0].__class__.__name__ == 'Discrete':
             actions_env = np.squeeze(np.eye(self.envs.action_space[0].n)[actions], 2)
         else:
             raise NotImplementedError
+
 
         return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env
 

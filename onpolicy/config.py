@@ -52,7 +52,7 @@ def get_config():
             Number of input frames which should be stack together.
         --hidden_size <int>
             Dimension of hidden layers for actor/critic networks
-        --layer_N <int>
+        --layer_N <int> ** need to set?
             Number of layers for actor/critic networks
         --use_ReLU
             by default True, will use ReLU. or else will use Tanh.

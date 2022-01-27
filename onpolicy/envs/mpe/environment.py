@@ -57,11 +57,13 @@ class MultiAgentEnv(gym.Env):
         self.share_observation_space = []
         share_obs_dim = 0
         for agent in self.agents:
-            total_action_space = []
+
+            #===============each agent has 2 action spaces? why not indexed by agent?=============
+            total_action_space = []     # list of gym.spaces.Discrete()
             
             # physical action space
             if self.discrete_action_space:
-                u_action_space = spaces.Discrete(world.dim_p * 2 + 1)
+                u_action_space = spaces.Discrete(world.dim_p * 2 + 1)   # what's u
             else:
                 u_action_space = spaces.Box(
                     low=-agent.u_range, high=+agent.u_range, shape=(world.dim_p,), dtype=np.float32)  # [-1,1]
@@ -74,7 +76,8 @@ class MultiAgentEnv(gym.Env):
             else:
                 c_action_space = spaces.Box(low=0.0, high=1.0, shape=(
                     world.dim_c,), dtype=np.float32)  # [0,1]
-            
+            #============================
+
             if not agent.silent:
                 total_action_space.append(c_action_space)
             # total action space
@@ -97,7 +100,7 @@ class MultiAgentEnv(gym.Env):
             agent.action.c = np.zeros(self.world.dim_c)
         
         self.share_observation_space = [spaces.Box(
-            low=-np.inf, high=+np.inf, shape=(share_obs_dim,), dtype=np.float32) for _ in range(self.n)]
+            low=-np.inf, high=+np.inf, shape=(share_obs_dim,), dtype=np.float32) for _ in range(self.n)]    #
         
         # rendering
         self.shared_viewer = shared_viewer
@@ -123,7 +126,7 @@ class MultiAgentEnv(gym.Env):
         self.agents = self.world.policy_agents
         # set action for each agent
         for i, agent in enumerate(self.agents):
-            self._set_action(action_n[i], agent, self.action_space[i])
+            self._set_action(action_n[i], agent, self.action_space[i])  # ?
         # advance world state
         self.world.step()  # core.step()
         # record observation for each agent
@@ -145,7 +148,7 @@ class MultiAgentEnv(gym.Env):
         if self.post_step_callback is not None:
             self.post_step_callback(self.world)
 
-        return obs_n, reward_n, done_n, info_n
+        return obs_n, reward_n, done_n, info_n  # list
 
     def reset(self):
         self.current_step = 0
@@ -191,7 +194,8 @@ class MultiAgentEnv(gym.Env):
         return self.reward_callback(agent, self.world)
 
     # set env action for a particular agent
-    def _set_action(self, action, agent, action_space, time=None):
+    def _set_action(self, action, agent, action_space, time=None):  # what objects are agents and actions?
+        """set agent.action.u and agent.action.c"""
         agent.action.u = np.zeros(self.world.dim_p)
         agent.action.c = np.zeros(self.world.dim_c)
         # process action

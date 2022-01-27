@@ -66,12 +66,12 @@ class Runner(object):
         from onpolicy.algorithms.r_mappo.r_mappo import R_MAPPO as TrainAlgo
         from onpolicy.algorithms.r_mappo.algorithm.rMAPPOPolicy import R_MAPPOPolicy as Policy
 
-        share_observation_space = self.envs.share_observation_space[0] if self.use_centralized_V else self.envs.observation_space[0]
+        share_observation_space = self.envs.share_observation_space[0] if self.use_centralized_V else self.envs.observation_space[0]    # what's this for
 
         # policy network
         self.policy = Policy(self.all_args,
                             self.envs.observation_space[0],
-                            share_observation_space,
+                            share_observation_space,    # shared for V and above row for pi?
                             self.envs.action_space[0],
                             device = self.device)
 
