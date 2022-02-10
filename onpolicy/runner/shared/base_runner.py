@@ -158,7 +158,7 @@ class Runner(object):
         :param total_num_steps: (int) total number of training env steps.
         """
         for k, v in env_infos.items():
-            if len(v)>0:
+            if len(v) > 0:
                 if self.use_wandb:
                     wandb.log({k: np.mean(v)}, step=total_num_steps)
                 else:

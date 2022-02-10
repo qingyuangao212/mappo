@@ -129,7 +129,7 @@ class MPERunner(Runner):
             raise NotImplementedError
 
 
-        return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env
+        return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env    # substitute actions_env with actions
 
     def insert(self, data):
         obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic = data

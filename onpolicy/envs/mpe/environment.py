@@ -56,6 +56,7 @@ class MultiAgentEnv(gym.Env):
         self.observation_space = []
         self.share_observation_space = []
         share_obs_dim = 0
+
         for agent in self.agents:
 
             #===============each agent has 2 action spaces? why not indexed by agent?=============
