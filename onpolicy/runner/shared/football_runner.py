@@ -1,3 +1,6 @@
+"""
+Removed all actions_env from mpe environments
+"""
 import time
 import numpy as np
 import torch
@@ -30,10 +33,10 @@ class FootballRunner(Runner):
 
             for step in range(self.episode_length):
                 # Sample actions
-                values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
+                values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
 
                 # Obser reward and next obs
-                obs, rewards, dones, infos = self.envs.step(actions_env)
+                obs, rewards, dones, infos = self.envs.step(actions)
 
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
 
@@ -48,7 +51,7 @@ class FootballRunner(Runner):
             total_num_steps = (episode + 1) * self.episode_length * self.n_rollout_threads
 
             # save model
-            if (episode % self.save_interval == 0 or episode == episodes - 1):
+            if episode % self.save_interval == 0 or episode == episodes - 1:
                 self.save()
 
             # log information
@@ -93,6 +96,7 @@ class FootballRunner(Runner):
 
     @torch.no_grad()
     def collect(self, step):
+
         self.trainer.prep_rollout()
         value, action, action_log_prob, rnn_states, rnn_states_critic \
             = self.trainer.policy.get_actions(np.concatenate(self.buffer.share_obs[step]),
@@ -114,10 +118,7 @@ class FootballRunner(Runner):
         rnn_states = np.array(np.split(_t2n(rnn_states), self.n_rollout_threads))
         rnn_states_critic = np.array(np.split(_t2n(rnn_states_critic), self.n_rollout_threads))
 
-        # assert self.envs.action_space[0].__class__.__name__ == 'Discrete'
-        actions_env = np.squeeze(np.eye(self.envs.action_space[0].n)[actions], 2)
-
-        return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env  # substitute actions_env with actions
+        return values, actions, action_log_probs, rnn_states, rnn_states_critic  # substitute actions_env with actions
 
     def insert(self, data):
         obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic = data
@@ -155,20 +156,9 @@ class FootballRunner(Runner):
             eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
             eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
 
-            if self.eval_envs.action_space[0].__class__.__name__ == 'MultiDiscrete':
-                for i in range(self.eval_envs.action_space[0].shape):
-                    eval_uc_actions_env = np.eye(self.eval_envs.action_space[0].high[i] + 1)[eval_actions[:, :, i]]
-                    if i == 0:
-                        eval_actions_env = eval_uc_actions_env
-                    else:
-                        eval_actions_env = np.concatenate((eval_actions_env, eval_uc_actions_env), axis=2)
-            elif self.eval_envs.action_space[0].__class__.__name__ == 'Discrete':
-                eval_actions_env = np.squeeze(np.eye(self.eval_envs.action_space[0].n)[eval_actions], 2)
-            else:
-                raise NotImplementedError
 
-            # Obser reward and next obs
-            eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
+            # Observe reward and next obs
+            eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions)
             eval_episode_rewards.append(eval_rewards)
 
             eval_rnn_states[eval_dones == True] = np.zeros(

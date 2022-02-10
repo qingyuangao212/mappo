@@ -1,5 +1,5 @@
 import argparse
-
+import datetime as dt
 
 def get_config():
     """
@@ -11,7 +11,7 @@ def get_config():
         --algorithm_name <algorithm_name>
             specifiy the algorithm, including `["rmappo", "mappo", "rmappg", "mappg", "trpo"]`
         --experiment_name <str>
-            an identifier to distinguish different experiment.
+            an identifier to distinguish different experiment. default current time
         --seed <int>
             set seed for numpy and torch 
         --cuda
@@ -160,7 +160,7 @@ def get_config():
     parser.add_argument("--algorithm_name", type=str,
                         default='mappo', choices=["rmappo", "mappo"])
 
-    parser.add_argument("--experiment_name", type=str, default="check", help="an identifier to distinguish different experiment.")
+    parser.add_argument("--experiment_name", type=str, default=dt.datetime.now().strftime("%Y%m%d_%H%M"), help="an identifier to distinguish different experiment.")
     parser.add_argument("--seed", type=int, default=1, help="Random seed for numpy/torch")
     parser.add_argument("--cuda", action='store_false', default=True, help="by default True, will use GPU to train; or else will use CPU;")
     parser.add_argument("--cuda_deterministic",
