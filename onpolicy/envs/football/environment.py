@@ -17,15 +17,19 @@ class FootballEnv(object):
 
     def __init__(self, args):
         # self.obs_instead_of_state = args.use_obs_instead_of_state
-
+        args = args.__dict__
+        football_keys = ['env_name', 'number_of_left_players_agent_controls', 'number_of_right_players_agent_controls', 'representation', 'rewards']
+        args = dict(keys=[football_keys], values=[args[key] for key in football_keys])
         if args.env_name == "academy_3_vs_1_with_keeper":
-
+            # parse args
+            args = args.__dict__
             self.env = create_environment(**args)
 
             self.num_left_agents = args.number_of_left_players_agent_controls
             self.num_right_agents = args.number_of_right_players_agent_controls
             self.num_agents = self.num_left_agents + self.num_right_agents
             self.representation = args.representation
+
         # you may add additional env init with 'elif' blocks
         else:
             raise NotImplementedError
