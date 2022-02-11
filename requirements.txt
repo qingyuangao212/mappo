@@ -68,7 +68,6 @@ more-itertools==4.3.0
 mpi4py==3.0.3
 mpyq==0.2.5
 msgpack==1.0.0
-mujoco-py==2.0.2.13
 multidict==4.7.6
 munch==2.3.2
 numpy==1.18.5
@@ -132,8 +131,6 @@ tensorboard==2.0.2
 tensorboard-logger==0.1.0
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.0
-tensorflow>2.0
-tensorflow-estimator>2.0
 termcolor==1.1.0
 tornado==5.1.1
 tqdm==4.48.2
