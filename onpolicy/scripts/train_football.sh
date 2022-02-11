@@ -8,7 +8,7 @@ algo="rmappo"
 exp="check" # if not set, this is current time
 seed_max=1
 
-echo "env is ${env_name}, scenario is ${env_name + '_' + representation}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
+echo "env is ${env_name}, scenario is ${env_name}_${representation}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 for seed in `seq ${seed_max}`;
 do
     echo "seed is ${seed}:"
