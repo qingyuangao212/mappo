@@ -47,7 +47,7 @@ def make_eval_env(all_args):
 # )
 
 def parse_args(args, parser):
-    parser.add_argument('--env_name', type=str, default='academy_3_vs_1_with_keeper')
+    # parser.add_argument('--env_name', type=str, default='academy_3_vs_1_with_keeper')
     parser.add_argument("--number_of_left_players_agent_controls", type=int, default=3)
     parser.add_argument('--number_of_right_players_agent_controls', type=int, default=0)
     parser.add_argument('--representation', type=str, default="simple115v2")
@@ -82,8 +82,8 @@ def main(args):
         torch.set_num_threads(all_args.n_training_threads)
 
     # run dir
-    run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + "/results") \
-              / all_args.env_name + '_' + all_args.representation / all_args.algorithm_name / all_args.experiment_name
+    run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + "/results") / \
+              (all_args.env_name + '_' + all_args.representation) / all_args.algorithm_name / all_args.experiment_name
 
     if not run_dir.exists():
         os.makedirs(str(run_dir))

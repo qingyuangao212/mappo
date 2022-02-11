@@ -44,7 +44,7 @@ gpustat==0.6.0
 gql==0.2.0
 graphql-core==1.1
 grpcio==1.31.0
-gym==0.17.2
+gym==0.21
 h5py==2.10.0
 hiredis==1.1.0
 idna==2.7

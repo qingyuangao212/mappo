@@ -19,25 +19,28 @@ class FootballEnv(object):
 
         # convert args to dict and take only certain keys:
         # this is because create_env will raise error if we pass in irrevelant key-values
-        args = args.__dict__
-        football_keys = ['env_name', 'number_of_left_players_agent_controls', 'number_of_right_players_agent_controls', 'representation', 'rewards']
-        args = dict(keys=[football_keys], values=[args[key] for key in football_keys])
-
+        environment_args = {
+            'env_name' : args.env_name,
+            'number_of_left_players_agent_controls': args.number_of_left_players_agent_controls,
+            'number_of_right_players_agent_controls': args.number_of_right_players_agent_controls,
+            'representation': args.representation,
+            'rewards': args.rewards
+        }
         if args.env_name == "academy_3_vs_1_with_keeper":
             # parse args
-            args = args.__dict__
-            self.env = create_environment(**args)
+            self.env = create_environment(**environment_args)
             self.num_left_agents = args.number_of_left_players_agent_controls
             self.num_right_agents = args.number_of_right_players_agent_controls
             self.num_agents = self.num_left_agents + self.num_right_agents
             self.representation = args.representation
-            self.reward = args.reward
+            self.rewards = args.rewards
 
         # you may add additional env init with 'elif' blocks
         else:
             raise NotImplementedError
-        # assert multi_agent environment
-        assert self.env.action_space.__class__.__name__=='MultiDiscrete'    # football multiDiscrete different from package multiDiscrete
+        assert self.env.action_space.__class__.__name__=='MultiDiscrete'
+        # football multiDiscrete different from package multiDiscrete
+
         self.action_space = list(self.env.action_space)
 
         self.observation_space = [gym.spaces.Box(low, high)
