@@ -2,7 +2,7 @@
 env_name="academy_3_vs_1_with_keeper"
 representation="simple115v2"
 number_of_left_players_agent_controls=3
-number_of_left_players_agent_controls=0
+number_of_right_players_agent_controls=0
 
 algo="rmappo"
 exp="check" # if not set, this is current time
