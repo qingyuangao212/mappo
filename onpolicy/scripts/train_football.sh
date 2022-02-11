@@ -16,7 +16,8 @@ do
     --algorithm_name ${algo} --experiment_name ${exp} --representation ${representation} \
     --number_of_left_players_agent_controls ${number_of_left_players_agent_controls} \
     --number_of_right_players_agent_controls ${number_of_right_players_agent_controls} --seed ${seed} \
-    --n_training_threads 1 --n_rollout_threads 7 --num_mini_batch 1 --episode_length 400 --num_env_steps 20000000 \
-    --ppo_epoch 10 --use_ReLU --gain 0.01 --lr 7e-4 --critic_lr 7e-4 --wandb_name "peter_gao" --user_name "peter_gao" \
-    --use_wandb
+    --n_rollout_threads 50 --num_mini_batch 1 --episode_length 200 --num_env_steps 25_000_000 \
+    --ppo_epoch 15 --use_ReLU --wandb_name "football" --user_name "peter_gao" \
+    --use_wandb --save_interval 200_000 --log_interval 200_000 \
+    --use_eval --eval_interval 400_000 --eval_episodes 100 --n_eval_rollout_threads 100
 done
