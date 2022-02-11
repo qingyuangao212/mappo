@@ -57,8 +57,8 @@ class FootballRunner(Runner):
             # log information
             if episode % self.log_interval == 0:
                 end = time.time()
-                print("\n Scenario {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n"
-                      .format(self.all_args.scenario_name,
+                print("\n Environment Representation {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n"
+                      .format(self.all_args.env_name + '_' + self.all_args.representation,
                               self.algorithm_name,
                               self.experiment_name,
                               episode,
