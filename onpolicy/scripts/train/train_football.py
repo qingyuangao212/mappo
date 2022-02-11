@@ -51,7 +51,7 @@ def parse_args(args, parser):
     parser.add_argument("--number_of_left_players_agent_controls", type=int, default=3)
     parser.add_argument('--number_of_right_players_agent_controls', type=int, default=0)
     parser.add_argument('--representation', type=str, default="simple115v2")
-    parser.add_argument('--rewards', type=str, default="scoring.checkpoints")
+    parser.add_argument('--rewards', type=str, default="scoring")
     all_args = parser.parse_known_args(args)[0]
     return all_args
 
