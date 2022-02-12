@@ -10,29 +10,31 @@ from pathlib import Path
 import torch
 from onpolicy.config import get_config
 from onpolicy.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
-from onpolicy.envs.football.environment import FootballEnv
+from onpolicy.envs.football.footballEnv import football_env
 
 """Train script for MPEs."""
 
-
 def make_train_env(all_args):
     def get_env_fn(rank):
-        env = FootballEnv(all_args)
-        env.seed(all_args.seed + rank * 1000)
-        return env
-
+        def init_env():
+            env = football_env(all_args)
+            env.seed(all_args.seed + rank * 1000)
+            return env
+        return init_env
     if all_args.n_rollout_threads == 1:
         return DummyVecEnv([get_env_fn(0)])
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
 
+
 def make_eval_env(all_args):
     def get_env_fn(rank):
-        env = FootballEnv(all_args)
-        env.seed(all_args.seed * 50000 + rank * 10000)
-        return env
-
+        def init_env():
+            env = football_env(all_args)
+            env.seed(all_args.seed * 50000 + rank * 10000)
+            return env
+        return init_env
     if all_args.n_eval_rollout_threads == 1:
         return DummyVecEnv([get_env_fn(0)])
     else:

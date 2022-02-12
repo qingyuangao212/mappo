@@ -7,6 +7,7 @@ from .multi_discrete import MultiDiscrete
 # update bounds to center around agent
 cam_range = 2
 
+
 # environment for all agents in the multiagent world
 # currently code assumes that no agents will be created/destroyed at runtime!
 class MultiAgentEnv(gym.Env):
@@ -48,7 +49,7 @@ class MultiAgentEnv(gym.Env):
         # if true, every agent has the same reward
         self.shared_reward = world.collaborative if hasattr(
             world, 'collaborative') else False
-        #self.shared_reward = False
+        # self.shared_reward = False
         self.time = 0
 
         # configure spaces
@@ -59,12 +60,12 @@ class MultiAgentEnv(gym.Env):
 
         for agent in self.agents:
 
-            #===============each agent has 2 action spaces? why not indexed by agent?=============
-            total_action_space = []     # list of gym.spaces.Discrete()
-            
+            # ===============each agent has 2 action spaces? why not indexed by agent?=============
+            total_action_space = []  # list of gym.spaces.Discrete()
+
             # physical action space
             if self.discrete_action_space:
-                u_action_space = spaces.Discrete(world.dim_p * 2 + 1)   # what's u
+                u_action_space = spaces.Discrete(world.dim_p * 2 + 1)  # what's u
             else:
                 u_action_space = spaces.Box(
                     low=-agent.u_range, high=+agent.u_range, shape=(world.dim_p,), dtype=np.float32)  # [-1,1]
@@ -77,7 +78,7 @@ class MultiAgentEnv(gym.Env):
             else:
                 c_action_space = spaces.Box(low=0.0, high=1.0, shape=(
                     world.dim_c,), dtype=np.float32)  # [0,1]
-            #============================
+            # ============================
 
             if not agent.silent:
                 total_action_space.append(c_action_space)
@@ -86,23 +87,23 @@ class MultiAgentEnv(gym.Env):
                 # all action spaces are discrete, so simplify to MultiDiscrete action space
                 if all([isinstance(act_space, spaces.Discrete) for act_space in total_action_space]):
                     act_space = MultiDiscrete(
-                        [[0, act_space.n-1] for act_space in total_action_space])
+                        [[0, act_space.n - 1] for act_space in total_action_space])
                 else:
                     act_space = spaces.Tuple(total_action_space)
                 self.action_space.append(act_space)
             else:
                 self.action_space.append(total_action_space[0])
-            
+
             # observation space
             obs_dim = len(observation_callback(agent, self.world))
             share_obs_dim += obs_dim
             self.observation_space.append(spaces.Box(
                 low=-np.inf, high=+np.inf, shape=(obs_dim,), dtype=np.float32))  # [-inf,inf]
             agent.action.c = np.zeros(self.world.dim_c)
-        
+
         self.share_observation_space = [spaces.Box(
-            low=-np.inf, high=+np.inf, shape=(share_obs_dim,), dtype=np.float32) for _ in range(self.n)]    #
-        
+            low=-np.inf, high=+np.inf, shape=(share_obs_dim,), dtype=np.float32) for _ in range(self.n)]  #
+
         # rendering
         self.shared_viewer = shared_viewer
         if self.shared_viewer:
@@ -205,7 +206,7 @@ class MultiAgentEnv(gym.Env):
             size = action_space.high - action_space.low + 1
             index = 0
             for s in size:
-                act.append(action[index:(index+s)])
+                act.append(action[index:(index + s)])
                 index += s
             action = act
         else:
@@ -295,14 +296,14 @@ class MultiAgentEnv(gym.Env):
 
             if self.viewers[i] is None:
                 # import rendering only if we need it (and don't import for headless machines)
-                #from gym.envs.classic_control import rendering
+                # from gym.envs.classic_control import rendering
                 from . import rendering
                 self.viewers[i] = rendering.Viewer(700, 700)
 
         # create rendering geometry
         if self.render_geoms is None:
             # import rendering only if we need it (and don't import for headless machines)
-            #from gym.envs.classic_control import rendering
+            # from gym.envs.classic_control import rendering
             from . import rendering
             self.render_geoms = []
             self.render_geoms_xform = []
@@ -390,7 +391,7 @@ class MultiAgentEnv(gym.Env):
             else:
                 pos = self.agents[i].state.p_pos
             self.viewers[i].set_bounds(
-                pos[0]-cam_range, pos[0]+cam_range, pos[1]-cam_range, pos[1]+cam_range)
+                pos[0] - cam_range, pos[0] + cam_range, pos[1] - cam_range, pos[1] + cam_range)
             # update geometry positions
             for e, entity in enumerate(self.world.entities):
                 self.render_geoms_xform[e].set_translation(*entity.state.p_pos)
