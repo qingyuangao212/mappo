@@ -61,7 +61,9 @@ class FootballEnv(gym.Env):
         return self.env.reset()
 
     def step(self, actions: np.ndarray):
-        return self.env.step(actions)  # obs, reward, done, info
+        obs, reward, done, info = self.env.step(actions)
+        done = np.array([done] * self.num_agents)
+        return obs, reward, done, info
 
     def close(self):
         self.env.close()

@@ -35,10 +35,20 @@ class FootballRunner(Runner):
                 # Sample actions
                 values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
 
+                print('======action shape============')
+                print(type(actions))
+                print(actions.shape)
+
+                actions_env = actions.squeeze()
                 # Obser reward and next obs
-                obs, rewards, dones, infos = self.envs.step(actions)
+                obs, rewards, dones, infos = self.envs.step(actions_env)
+
+
 
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
+                print('===========data shape==============')
+                [print(x.shape) for x in [obs, rewards, dones, values, actions, action_log_probs, rnn_states, rnn_states_critic]]
+                ## error note: dones is (2,) rnn states is (2,3,1,64), need dones to be (2,3)?
 
                 # insert data into buffer
                 self.insert(data)
