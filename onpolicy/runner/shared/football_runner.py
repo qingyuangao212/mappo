@@ -35,22 +35,46 @@ class FootballRunner(Runner):
                 # Sample actions
                 values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
 
-                print('======action shape============')
+
+
+                actions_env = np.squeeze(actions)
+                # Obser reward and next obs
+                # ===========
+
+                print('======In runner: action type and shape============')
                 print(type(actions))
                 print(actions.shape)
+                print("actions first element: ")
+                print(actions[0])
 
-                actions_env = actions.squeeze()
-                # Obser reward and next obs
+                print('======action_env shape============')
+                print(type(actions_env))
+                print(actions_env.shape)
+                print("actions_env first element: ")
+                print(actions_env[0])
+
+
                 obs, rewards, dones, infos = self.envs.step(actions_env)
 
-
-
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
-                print('===========data shape==============')
-                [print(x.shape) for x in [obs, rewards, dones, values, actions, action_log_probs, rnn_states, rnn_states_critic]]
-                ## error note: dones is (2,) rnn states is (2,3,1,64), need dones to be (2,3)?
 
-                # insert data into buffer
+                # print('===========data shape==============')
+                # [print(x.shape) for x in [obs, rewards, dones, values, actions, action_log_probs, rnn_states, rnn_states_critic]]
+
+                # ========Outcome of above print statements========
+                # note 2 is num_threads, 3 is num_agents
+                # obs: (2, 3, 115)
+                # rewards: (2, 3)
+                # dones: (2, 3)
+                # values: (2, 3, 1)
+                # actions: (2, 3, 1)
+                # action_log_probs: (2, 3, 1)
+                # rnn_states: (2, 3, 1, 64)
+                # rnn_states_critic: (2, 3, 1, 64)
+                # ================
+
+
+                # insert data into buffer (insert contains some customized dimension adjustments)
                 self.insert(data)
 
             # compute return and update network
@@ -140,11 +164,9 @@ class FootballRunner(Runner):
         masks = np.ones((self.n_rollout_threads, self.num_agents, 1), dtype=np.float32)
         masks[dones == True] = np.zeros(((dones == True).sum(), 1), dtype=np.float32)
 
-        if self.use_centralized_V:
-            share_obs = obs.reshape(self.n_rollout_threads, -1)
-            share_obs = np.expand_dims(share_obs, 1).repeat(self.num_agents, axis=1)
-        else:
-            share_obs = obs
+        # ===customization parts==========
+        rewards = np.expand_dims(rewards, -1)       # (num_threads, num_agents) -> (num_threads, num_agents, 1)
+        share_obs = obs     # no need for centralized_v
 
         self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards,
                            masks)
@@ -164,11 +186,18 @@ class FootballRunner(Runner):
                                                                    np.concatenate(eval_masks),
                                                                    deterministic=True)
             eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
+
+            # ============
+            print("eval_actions shape")
+            print(eval_actions.shape)
+
             eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
 
+            eval_actions_env = np.squeeze(eval_actions)
 
             # Observe reward and next obs
-            eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions)
+            eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
+
             eval_episode_rewards.append(eval_rewards)
 
             eval_rnn_states[eval_dones == True] = np.zeros(

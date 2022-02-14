@@ -60,7 +60,12 @@ class FootballEnv(gym.Env):
     def reset(self, choose=True):
         return self.env.reset()
 
-    def step(self, actions: np.ndarray):
+    def step(self, actions):
+
+        # ========test==========
+        print("-------------------")
+        print(f"action received in env: {actions}")
+
         obs, reward, done, info = self.env.step(actions)
         done = np.array([done] * self.num_agents)
         return obs, reward, done, info

@@ -12,7 +12,7 @@ echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, m
 for seed in `seq ${seed_max}`;
 do
     echo "seed is ${seed}:"
-    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_valuenorm --use_popart --env_name ${env} \
+    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_valuenorm --env_name ${env} \
     --algorithm_name ${algo} --experiment_name ${exp} --representation ${rep} \
     --number_of_left_players_agent_controls ${num_left_agents} \
     --number_of_right_players_agent_controls ${num_right_agents} --seed ${seed_max} \

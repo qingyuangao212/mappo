@@ -143,6 +143,8 @@ def worker(remote, parent_remote, env_fn_wrapper):
     while True:
         cmd, data = remote.recv()
         if cmd == 'step':
+            # =========
+            print(f"===worker receive data: {data}")
             ob, reward, done, info = env.step(data)
             if 'bool' in done.__class__.__name__:
                 if done:
@@ -256,6 +258,11 @@ class SubprocVecEnv(ShareVecEnv):
 
     def step_async(self, actions):
         for remote, action in zip(self.remotes, actions):
+
+            # ========== test ===============
+            print("-------------------")
+            print(f"action sent {action}")
+
             remote.send(('step', action))
         self.waiting = True
 
