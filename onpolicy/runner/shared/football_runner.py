@@ -38,42 +38,11 @@ class FootballRunner(Runner):
 
 
                 actions_env = np.squeeze(actions)
-                # Obser reward and next obs
-                # ===========
-
-                print('======In runner: action type and shape============')
-                print(type(actions))
-                print(actions.shape)
-                print("actions first element: ")
-                print(actions[0])
-
-                print('======action_env shape============')
-                print(type(actions_env))
-                print(actions_env.shape)
-                print("actions_env first element: ")
-                print(actions_env[0])
-
+                # Observe reward and next obs
 
                 obs, rewards, dones, infos = self.envs.step(actions_env)
 
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
-
-                # print('===========data shape==============')
-                # [print(x.shape) for x in [obs, rewards, dones, values, actions, action_log_probs, rnn_states, rnn_states_critic]]
-
-                # ========Outcome of above print statements========
-                # note 2 is num_threads, 3 is num_agents
-                # obs: (2, 3, 115)
-                # rewards: (2, 3)
-                # dones: (2, 3)
-                # values: (2, 3, 1)
-                # actions: (2, 3, 1)
-                # action_log_probs: (2, 3, 1)
-                # rnn_states: (2, 3, 1, 64)
-                # rnn_states_critic: (2, 3, 1, 64)
-                # ================
-
-
                 # insert data into buffer (insert contains some customized dimension adjustments)
                 self.insert(data)
 
@@ -101,15 +70,6 @@ class FootballRunner(Runner):
                               self.num_env_steps,
                               int(total_num_steps / (end - start))))
 
-                # if self.env_name == "academy_3_vs_1_with_keeper":
-                #     env_infos = {}
-                #     for agent_id in range(self.num_agents):
-                #         idv_rews = []
-                #         for info in infos:
-                #             if 'individual_reward' in info[agent_id].keys():
-                #                 idv_rews.append(info[agent_id]['individual_reward'])
-                #         agent_k = 'agent%i/individual_rewards' % agent_id
-                #         env_infos[agent_k] = idv_rews
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
@@ -138,14 +98,7 @@ class FootballRunner(Runner):
                                               np.concatenate(self.buffer.rnn_states[step]),
                                               np.concatenate(self.buffer.rnn_states_critic[step]),
                                               np.concatenate(self.buffer.masks[step]))
-        # print('\n', step)
-        # print("shapes:========")
-        # print(value.shape)
-        # print(action.shape)
-        # print(action_log_prob.shape)
-        # print(rnn_states.shape)
-        # print(rnn_states_critic.shape)
-        # [self.envs, agents, dim]
+
         values = np.array(np.split(_t2n(value), self.n_rollout_threads))
         actions = np.array(np.split(_t2n(action), self.n_rollout_threads))
         action_log_probs = np.array(np.split(_t2n(action_log_prob), self.n_rollout_threads))
@@ -186,10 +139,6 @@ class FootballRunner(Runner):
                                                                    np.concatenate(eval_masks),
                                                                    deterministic=True)
             eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
-
-            # ============
-            print("eval_actions shape")
-            print(eval_actions.shape)
 
             eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
 

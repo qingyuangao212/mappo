@@ -1,18 +1,7 @@
 import gym
 from gym import spaces
-from gym.envs.registration import EnvSpec
 import numpy as np
 from gfootball.env import create_environment
-from ..mpe.multi_discrete import MultiDiscrete
-
-
-# ====== sample football config ========
-# ENV_CONFIG = dict(
-#     env_name="academy_3_vs_1_with_keeper",
-#     number_of_left_players_agent_controls=1,
-#     number_of_right_players_agent_controls=0,
-#     representation="simple115v2",
-# )
 
 class FootballEnv(gym.Env):
 
@@ -62,12 +51,8 @@ class FootballEnv(gym.Env):
 
     def step(self, actions):
 
-        # ========test==========
-        print("-------------------")
-        print(f"action received in env: {actions}")
-
         obs, reward, done, info = self.env.step(actions)
-        done = np.array([done] * self.num_agents)
+        done = np.array([done] * self.num_agents)    #
         return obs, reward, done, info
 
     def close(self):
