@@ -145,6 +145,7 @@ class Runner(object):
         :param train_infos: (dict) information about training update.
         :param total_num_steps: (int) total number of training env steps.
         """
+        print("log train initiated!")
         for k, v in train_infos.items():
             if self.use_wandb:
                 wandb.log({k: v}, step=total_num_steps)

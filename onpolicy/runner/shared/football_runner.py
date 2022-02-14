@@ -15,14 +15,15 @@ def _t2n(x):
 
 class FootballRunner(Runner):
     """Runner class to perform training, evaluation. and data collection for the FootballEnvs. See parent class for
-    details. """
+    details.
+    """
 
     def __init__(self, config):
         super(FootballRunner, self).__init__(config)
         assert self.envs.action_space[0].__class__.__name__ == 'Discrete'
 
     def run(self):
-        self.warmup()
+        self.warmup()       # envs reset
 
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
@@ -32,19 +33,24 @@ class FootballRunner(Runner):
                 self.trainer.policy.lr_decay(episode, episodes)
 
             for step in range(self.episode_length):
-                # Sample actions
-                values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)
-
-
-
-                actions_env = np.squeeze(actions)
-                # Observe reward and next obs
-
-                obs, rewards, dones, infos = self.envs.step(actions_env)
-
+                values, actions, action_log_probs, rnn_states, rnn_states_critic = self.collect(step)    # Sample actions
+                actions_env = np.squeeze(actions)   # (num_threads, num_agents, 1) -> (num_threads, num_agents)
+                obs, rewards, dones, infos = self.envs.step(actions_env)    # Observe reward and next obs, refer to envrionment step method, envs add additional dimension (nun_threads,) ahead
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
-                # insert data into buffer (insert contains some customized dimension adjustments)
-                self.insert(data)
+
+                self.insert(data)   # insert data into buffer (insert contains some customized dimension adjustments)
+
+                # ========Outcome of data========
+                # note 2 is num_threads, 3 is num_agents
+                # obs: (2, 3, 115)
+                # rewards: (2, 3)
+                # dones: (2, 3)
+                # values: (2, 3, 1)
+                # actions: (2, 3, 1)
+                # action_log_probs: (2, 3, 1)
+                # rnn_states: (2, 3, 1, 64)
+                # rnn_states_critic: (2, 3, 1, 64)
+                # ================
 
             # compute return and update network
             self.compute()
@@ -70,11 +76,20 @@ class FootballRunner(Runner):
                               self.num_env_steps,
                               int(total_num_steps / (end - start))))
 
+                # if self.env_name == "academy_3_vs_1_with_keeper":
+                #     env_infos = {}
+                #     for agent_id in range(self.num_agents):
+                #         idv_rews = []
+                #         for info in infos:
+                #             if 'individual_reward' in info[agent_id].keys():
+                #                 idv_rews.append(info[agent_id]['individual_reward'])
+                #         agent_k = 'agent%i/individual_rewards' % agent_id
+                #         env_infos[agent_k] = idv_rews
+
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
                 self.log_train(train_infos, total_num_steps)
-                # self.log_env(env_infos, total_num_steps)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -108,17 +123,35 @@ class FootballRunner(Runner):
         return values, actions, action_log_probs, rnn_states, rnn_states_critic  # substitute actions_env with actions
 
     def insert(self, data):
+        """
+        Args:
+            Note all starting dimension is (num_threads, num_agents,...):  2 is num_threads, 3 is num_agents
+            obs: (2, 3, 115)
+            rewards: (2, 3)
+            dones: (2, 3)
+            values: (2, 3, 1)
+            actions: (2, 3, 1)
+            action_log_probs: (2, 3, 1)
+            rnn_states: (2, 3, 1, 64)
+            rnn_states_critic: (2, 3, 1, 64)
+
+        """
         obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic = data
 
-        rnn_states[dones == True] = np.zeros(((dones == True).sum(), self.recurrent_N, self.hidden_size),
-                                             dtype=np.float32)
-        rnn_states_critic[dones == True] = np.zeros(((dones == True).sum(), *self.buffer.rnn_states_critic.shape[3:]),
-                                                    dtype=np.float32)
-        masks = np.ones((self.n_rollout_threads, self.num_agents, 1), dtype=np.float32)
+        # reset rnn_states for (thread, agent) pairs where dones==True, create mask for dones
+        rnn_states[dones == True] = np.zeros(((dones == True).sum(), self.recurrent_N, self.hidden_size))
+        rnn_states_critic[dones == True] = np.zeros(((dones == True).sum(), *self.buffer.rnn_states_critic.shape[3:]))
+        masks = np.ones((self.n_rollout_threads, self.num_agents, 1), dtype=np.float32)     # masks shape: (num_threads, num_agents, 1)
         masks[dones == True] = np.zeros(((dones == True).sum(), 1), dtype=np.float32)
 
+        # can rewrite the above block the following way:
+        # rnn_states[dones] = 0
+        # rnn_states_critic[dones] = 0
+        # masks = np.expand_dims(dones, -1).astype(np.float32)
+
+
         # ===customization parts==========
-        rewards = np.expand_dims(rewards, -1)       # (num_threads, num_agents) -> (num_threads, num_agents, 1)
+        rewards = np.expand_dims(rewards, -1)       # (num_threads, num_agents) -> (num_threads, num_agents, 1), to match dimensions for NN
         share_obs = obs     # no need for centralized_v
 
         self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards,

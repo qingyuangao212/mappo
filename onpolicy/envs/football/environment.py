@@ -4,10 +4,20 @@ import numpy as np
 from gfootball.env import create_environment
 
 class FootballEnv(gym.Env):
+    """
+    Customized gym environment class.
+
+
+    """
 
 
     def __init__(self, args):
-
+        """
+        For discrete action space and Box observation space:
+            action_space - list of Discrete(): for gym.MultiDiscrete, convert via list(). List length = num_agents
+            observation_space: - list of Box(observation_space_n,) space for each agent. List length = num_agents
+            share_observation_space: same dimension as observation_space
+        """
         # convert args to dict and take only certain keys:
         # this is because create_env will raise error if we pass in irrevelant key-values
         environment_args_dict = {
@@ -47,13 +57,26 @@ class FootballEnv(gym.Env):
             self.env.seed(seed)
 
     def reset(self, choose=True):
+        """
+        Returns:
+            obs[np.ndarray]: (num_agents, observation_space_n)
+        """
         return self.env.reset()
 
     def step(self, actions):
+        """
 
-        obs, reward, done, info = self.env.step(actions)
-        done = np.array([done] * self.num_agents)    #
-        return obs, reward, done, info
+        Args:
+            actions[np.ndarray]: (num_agents,) for scalar agent action
+        Returns:
+            obs[np.ndarray]: (num_agents, observation_space_n)
+            rewards[np.ndarray]: (num_agents,)
+            dones[np.array(dtype: bool)]: (num_agents,)
+            info[dict]
+        """
+        obs, rewards, done, info = self.env.step(actions)
+        dones = np.array([done] * self.num_agents)
+        return obs, rewards, dones, info
 
     def close(self):
         self.env.close()

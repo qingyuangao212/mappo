@@ -17,7 +17,7 @@ do
     --number_of_left_players_agent_controls ${num_left_agents} \
     --number_of_right_players_agent_controls ${num_right_agents} --seed ${seed_max} \
     --n_rollout_threads 50 --num_mini_batch 2 --episode_length 200 --num_env_steps 25000000 \
-    --ppo_epoch 15 --use_ReLU --wandb_name "football" --user_name "peter_gao" \
-    --use_wandb --save_interval 200000 --log_interval 200000 \
-    --use_eval --eval_interval 400000 --eval_episodes 100 --n_eval_rollout_threads 100
+    --ppo_epoch 15 --use_ReLU --wandb_name "football" --user_name "qingyuan_gao" \
+    --use_wandb --save_interval 200000 --log_interval 1000 \
+    --use_eval --eval_interval 2000 --eval_episodes 100 --n_eval_rollout_threads 100 --rewards scoring,checkpoints
 done
