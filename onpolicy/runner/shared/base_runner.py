@@ -139,28 +139,18 @@ class Runner(object):
             policy_critic_state_dict = torch.load(str(self.model_dir) + '/critic.pt')
             self.policy.critic.load_state_dict(policy_critic_state_dict)
  
-    def log_train(self, train_infos, total_num_steps):
+    def log(self, info: dict, total_num_steps):
         """
-        Log training info.
-        :param train_infos: (dict) information about training update.
-        :param total_num_steps: (int) total number of training env steps.
+        log all items of info at step total_num_steps
         """
         print("log train initiated!")
-        for k, v in train_infos.items():
+        for k, v in info.items():
             if self.use_wandb:
                 wandb.log({k: v}, step=total_num_steps)
             else:
                 self.writter.add_scalars(k, {k: v}, total_num_steps)
 
-    def log_env(self, env_infos, total_num_steps):
-        """
-        Log env info.
-        :param env_infos: (dict) information about env state.
-        :param total_num_steps: (int) total number of training env steps.
-        """
-        for k, v in env_infos.items():
-            if len(v) > 0:
-                if self.use_wandb:
-                    wandb.log({k: np.mean(v)}, step=total_num_steps)
-                else:
-                    self.writter.add_scalars(k, {k: np.mean(v)}, total_num_steps)
+    # def log_env(self, env_infos, total_num_steps):
+    #     """
+    #     Log env info.
+    #     :param env_i

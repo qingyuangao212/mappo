@@ -23,6 +23,10 @@ class FootballRunner(Runner):
         assert self.envs.action_space[0].__class__.__name__ == 'Discrete'
 
     def run(self):
+        """
+        the for episode loop: each loop runs an episode for all rollout_threads.
+
+        """
         self.warmup()       # envs reset
 
         start = time.time()
@@ -89,7 +93,7 @@ class FootballRunner(Runner):
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
-                self.log_train(train_infos, total_num_steps)
+                self.log(train_infos, total_num_steps)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -187,12 +191,13 @@ class FootballRunner(Runner):
             eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
             eval_masks[eval_dones == True] = np.zeros(((eval_dones == True).sum(), 1), dtype=np.float32)
 
-        eval_episode_rewards = np.array(eval_episode_rewards)
-        eval_env_infos = {}
-        eval_env_infos['eval_average_episode_rewards'] = np.sum(np.array(eval_episode_rewards), axis=0)
+        eval_episode_rewards = np.array(eval_episode_rewards)   # dimension: (episode_length, num_eval_threads)
+        mean_episode_rewards = np.array(eval_episode_rewards).sum(axis=0).mean()    # sum over steps and average over threads
+
+        eval_env_infos = {'eval_average_episode_rewards': mean_episode_rewards}
         eval_average_episode_rewards = np.mean(eval_env_infos['eval_average_episode_rewards'])
-        print("eval average episode rewards of agent: " + str(eval_average_episode_rewards))
-        self.log_env(eval_env_infos, total_num_steps)
+        print(f"eval average episode rewards of agent:  {mean_episode_rewards}")
+        self.log(eval_env_infos, total_num_steps)
 
     # @torch.no_grad()
     # def render(self):
