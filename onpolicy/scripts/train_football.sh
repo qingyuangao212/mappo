@@ -1,15 +1,17 @@
 #!/bin/sh
-# use exp and seed to describe experiement and run
 env="academy_3_vs_1_with_keeper"
 rep="simple115v2"
 num_left_agents=3
 num_right_agents=0
 algo="rmappo"
 seed_max=1
+exp="baseline"
 
 echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 for seed in `seq ${seed_max}`;
 do
+    # use experiment_name and run_name to describe experiment and run
+    # in baseline there's no run, no need to add run_name
     echo "seed is ${seed}:"
     CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_valuenorm --use_popart --env_name ${env} \
     --algorithm_name ${algo} --experiment_name ${exp} --representation ${rep} \
@@ -23,3 +25,6 @@ done
 
 # num_episodes = num_env_steps // episode_length // n_rollout_threads
 # num_train_logs = ( num_episodes // log_iterval ) + 1
+
+# wandb info:
+# project: env_name
