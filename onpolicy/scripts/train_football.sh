@@ -13,7 +13,7 @@ do
     # use experiment_name and run_name to describe experiment and run
     # in baseline there's no run, no need to add run_name
     echo "seed is ${seed}:"
-    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_valuenorm --use_popart --env_name ${env} \
+    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_popart --env_name ${env} \
     --algorithm_name ${algo} --experiment_name ${exp} --representation ${rep} \
     --number_of_left_players_agent_controls ${num_left_agents} \
     --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \

@@ -143,14 +143,9 @@ class Runner(object):
         """
         log all items of info at step total_num_steps
         """
-        print("log train initiated!")
         for k, v in info.items():
             if self.use_wandb:
                 wandb.log({k: v}, step=total_num_steps)
             else:
                 self.writter.add_scalars(k, {k: v}, total_num_steps)
 
-    # def log_env(self, env_infos, total_num_steps):
-    #     """
-    #     Log env info.
-    #     :param env_i
