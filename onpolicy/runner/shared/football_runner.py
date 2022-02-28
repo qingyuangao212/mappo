@@ -60,11 +60,6 @@ class FootballRunner(Runner):
                 # record win_history
                 if np.any(dones):
 
-                    # test
-                    print("====infos====")
-                    print(infos)
-                    print(len(infos))
-
                     # find threads that are done
                     for (i_thread, done) in enumerate(dones):
 
@@ -218,11 +213,6 @@ class FootballRunner(Runner):
 
             # record eval win_history
             if np.any(eval_dones):
-
-                # test
-                print("====eval infos====")
-                print(eval_infos)
-                print(len(eval_infos))
 
                 # find threads that are done
                 for (i_thread, done) in enumerate(eval_dones):
