@@ -22,6 +22,9 @@ class FootballRunner(Runner):
         super(FootballRunner, self).__init__(config)
         assert self.envs.action_space[0].__class__.__name__ == 'Discrete'
 
+        # add eval_episodes
+        self.eval_episodes = self.all_args.eval_episodes
+
     def run(self):
         """
         the for episode loop: each loop runs an episode for all rollout_threads.
@@ -109,9 +112,10 @@ class FootballRunner(Runner):
 
                 # log_win_rate
                 train_infos["win_rate"] = np.mean(win_history)
+                print("win rate is {}".format(train_infos["win_rate"]))
                 win_history = []
 
-
+                self.log(train_infos, total_num_steps)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -186,47 +190,52 @@ class FootballRunner(Runner):
         win_history = []
         eval_obs = self.eval_envs.reset()
 
-        eval_rnn_states = np.zeros((self.n_eval_rollout_threads, *self.buffer.rnn_states.shape[2:]), dtype=np.float32)
-        eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
+        n_iters = self.eval_episodes // self.n_eval_rollout_threads
+        for i in range(n_iters):
 
-        for eval_step in range(self.episode_length):
-            self.trainer.prep_rollout()
-            eval_action, eval_rnn_states = self.trainer.policy.act(np.concatenate(eval_obs),
-                                                                   np.concatenate(eval_rnn_states),
-                                                                   np.concatenate(eval_masks),
-                                                                   deterministic=True)
-            eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
-
-            eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
-
-            eval_actions_env = np.squeeze(eval_actions)
-
-            # Observe reward and next obs
-            eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
-
-            eval_episode_rewards.append(eval_rewards)
-
-            eval_rnn_states[eval_dones == True] = np.zeros(
-                ((eval_dones == True).sum(), self.recurrent_N, self.hidden_size), dtype=np.float32)
+            eval_rnn_states = np.zeros((self.n_eval_rollout_threads, *self.buffer.rnn_states.shape[2:]), dtype=np.float32)
             eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
-            eval_masks[eval_dones == True] = np.zeros(((eval_dones == True).sum(), 1), dtype=np.float32)
 
-            # record eval win_history
-            if np.any(eval_dones):
+            for eval_step in range(self.episode_length):
+                self.trainer.prep_rollout()
+                eval_action, eval_rnn_states = self.trainer.policy.act(np.concatenate(eval_obs),
+                                                                       np.concatenate(eval_rnn_states),
+                                                                       np.concatenate(eval_masks),
+                                                                       deterministic=True)
+                eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
 
-                # find threads that are done
-                for (i_thread, done) in enumerate(eval_dones):
+                eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
 
-                    if np.any(done):
-                        info = eval_infos[i_thread]
-                        win_history.append(info['score_reward'] > 0)  # score_reward > 0: left side wins; requires controls left-side only, requires end_episode_on_score
+                eval_actions_env = np.squeeze(eval_actions)
 
-        eval_episode_rewards = np.array(eval_episode_rewards)   # dimension: (episode_length, num_eval_threads)
+                # Observe reward and next obs
+                eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
+
+                eval_episode_rewards.append(eval_rewards)
+
+                eval_rnn_states[eval_dones == True] = np.zeros(
+                    ((eval_dones == True).sum(), self.recurrent_N, self.hidden_size), dtype=np.float32)
+                eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
+                eval_masks[eval_dones == True] = np.zeros(((eval_dones == True).sum(), 1), dtype=np.float32)
+
+                # record eval win_history
+                if np.any(eval_dones):
+
+                    # find threads that are done
+                    for (i_thread, done) in enumerate(eval_dones):
+
+                        if np.any(done):
+                            info = eval_infos[i_thread]
+                            win_history.append(info['score_reward'] > 0)  # score_reward > 0: left side wins; requires controls left-side only, requires end_episode_on_score
+
+        # (eval_episode_rewards) dimension: (episode_length, num_eval_threads * n_iters)
         mean_episode_rewards = np.array(eval_episode_rewards).sum(axis=0).mean()    # sum over steps and average over threads
 
         eval_env_infos = {'eval_average_episode_rewards': mean_episode_rewards,
                           'eval_win_rate': np.mean(win_history)}
 
+        print("\n----------Eval Info:--------------")
+        print(eval_env_infos)
         self.log(eval_env_infos, total_num_steps)
 
     # @torch.no_grad()
