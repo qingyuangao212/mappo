@@ -28,6 +28,7 @@ class FootballRunner(Runner):
 
         """
         self.warmup()       # envs reset
+        win_history = []    # log 1 & 0s for episode wins, shared by train and eval
 
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
@@ -56,9 +57,25 @@ class FootballRunner(Runner):
                 # rnn_states_critic: (2, 3, 1, 64)
                 # ================
 
+                # record win_history
+                if np.any(dones):
+
+                    # test
+                    print("====infos====")
+                    print(infos)
+                    print(len(infos))
+
+                    # find threads that are done
+                    for (i_thread, done) in enumerate(dones):
+
+                        if np.any(done):
+                            info = infos[i_thread]
+                            win_history.append(info['score_reward'] > 0)    # score_reward > 0: left side wins; requires controls left-side only, requires end_episode_on_score
+
+
             # compute return and update network
             self.compute()
-            train_infos = self.train()
+            train_infos = self.train()      # this calls buffer.after_update() at the backend, which resets buffer
 
             # post process
             total_num_steps = (episode + 1) * self.episode_length * self.n_rollout_threads
@@ -70,6 +87,7 @@ class FootballRunner(Runner):
             # log information
             if episode % self.log_interval == 0:
                 end = time.time()
+
                 print("\n Environment Representation {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n"
                       .format(self.all_args.env_name + '_' + self.all_args.representation,
                               self.algorithm_name,
@@ -93,7 +111,12 @@ class FootballRunner(Runner):
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
-                self.log(train_infos, total_num_steps)
+
+                # log_win_rate
+                train_infos["win_rate"] = np.mean(win_history)
+                win_history = []
+
+
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -163,7 +186,9 @@ class FootballRunner(Runner):
 
     @torch.no_grad()
     def eval(self, total_num_steps):
+
         eval_episode_rewards = []
+        win_history = []
         eval_obs = self.eval_envs.reset()
 
         eval_rnn_states = np.zeros((self.n_eval_rollout_threads, *self.buffer.rnn_states.shape[2:]), dtype=np.float32)
@@ -191,12 +216,27 @@ class FootballRunner(Runner):
             eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
             eval_masks[eval_dones == True] = np.zeros(((eval_dones == True).sum(), 1), dtype=np.float32)
 
+            # record eval win_history
+            if np.any(eval_dones):
+
+                # test
+                print("====eval infos====")
+                print(eval_infos)
+                print(len(eval_infos))
+
+                # find threads that are done
+                for (i_thread, done) in enumerate(eval_dones):
+
+                    if np.any(done):
+                        info = eval_infos[i_thread]
+                        win_history.append(info['score_reward'] > 0)  # score_reward > 0: left side wins; requires controls left-side only, requires end_episode_on_score
+
         eval_episode_rewards = np.array(eval_episode_rewards)   # dimension: (episode_length, num_eval_threads)
         mean_episode_rewards = np.array(eval_episode_rewards).sum(axis=0).mean()    # sum over steps and average over threads
 
-        eval_env_infos = {'eval_average_episode_rewards': mean_episode_rewards}
-        eval_average_episode_rewards = np.mean(eval_env_infos['eval_average_episode_rewards'])
-        print(f"eval average episode rewards of agent:  {mean_episode_rewards}")
+        eval_env_infos = {'eval_average_episode_rewards': mean_episode_rewards,
+                          'eval_win_rate': np.mean(win_history)}
+
         self.log(eval_env_infos, total_num_steps)
 
     # @torch.no_grad()

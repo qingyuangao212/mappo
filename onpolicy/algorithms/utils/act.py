@@ -17,7 +17,7 @@ class ACTLayer(nn.Module):
 
         if action_space.__class__.__name__ == "Discrete":
             action_dim = action_space.n
-            self.action_out = Categorical(inputs_dim, action_dim, use_orthogonal, gain)
+            self.action_out = Categorical(inputs_dim, action_dim, use_orthogonal, gain)     # a customized distribution
         elif action_space.__class__.__name__ == "Box":
             action_dim = action_space.shape[0]
             self.action_out = DiagGaussian(inputs_dim, action_dim, use_orthogonal, gain)
@@ -49,7 +49,7 @@ class ACTLayer(nn.Module):
         :return actions: (torch.Tensor) actions to take.
         :return action_log_probs: (torch.Tensor) log probabilities of taken actions.
         """
-        if self.mixed_action :
+        if self.mixed_action:
             actions = []
             action_log_probs = []
             for action_out in self.action_outs:
