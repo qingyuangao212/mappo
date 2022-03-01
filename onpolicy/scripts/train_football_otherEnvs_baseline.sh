@@ -12,7 +12,7 @@ list_num_left_agents=(3 10 10 10 2 2)
 rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
-seed_max=3
+seed_max=1
 exp="baseline"
 run_name="Test2"
 
