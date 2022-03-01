@@ -8,7 +8,7 @@ seed_max=1
 exp="baseline"
 run_name="test"
 echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
-for seed in `seq ${seed_max}`;
+for seed in $(seq ${seed_max})
 do
     # use experiment_name and run_name to describe experiment and run
     # in baseline there's no run, no need to add run_name
@@ -31,8 +31,9 @@ done
 
 # =============== Calculations =====================
 # num_episodes = num_env_steps // episode_length // n_rollout_threads
-# num_train_logs = ( num_episodes // log_iterval ) + 1
+# num_train_logs = ( num_episodes // log_interval ) + 1
 
 
 # =============== wandb info =====================
-# TBD
+# Group: env_name (e.g. academy_3_vs_1_with_keeper) + representation (simple115v2)
+# Run: algo_name ("RMAPPO") + experiment_name (e.g. "baseline" or parameter_name) + run_name (e.g. parameter_value)
