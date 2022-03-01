@@ -27,7 +27,9 @@ class FootballEnv(gym.Env):
             'representation': args.representation,
             'rewards': args.rewards
         }
-        if args.env_name == "academy_3_vs_1_with_keeper":
+        if args.env_name in ["academy_3_vs_1_with_keeper", "academy_corner", "academy_counterattack_easy", \
+                             "academy_counterattack_hard", "academy_pass_and_shoot_with_keeper", \
+                             "academy_run_pass_and_shoot_with_keeper"]:
             # parse args
             self.env = create_environment(**environment_args_dict)
             self.num_left_agents = args.number_of_left_players_agent_controls
