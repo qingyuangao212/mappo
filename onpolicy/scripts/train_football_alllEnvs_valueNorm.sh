@@ -12,9 +12,9 @@ list_num_left_agents=(3 10 4 4 2 2)
 rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
-seed_max=1
-exp="baseline"
-run_name="Test2"
+seed_max=3
+exp="valuenorm"
+run_name=""
 
 
 for i in "${!envs[@]}"; do
@@ -31,7 +31,7 @@ for i in "${!envs[@]}"; do
       # use experiment_name and run_name to describe experiment and run
       # in baseline there's no run, no need to add run_name
 
-      CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_popart --env_name ${env} \
+      CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_valuenorm --env_name ${env} \
       --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}_seed${seed}" --representation ${rep} \
       --number_of_left_players_agent_controls ${num_left_agents} \
       --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
@@ -62,3 +62,4 @@ done
 # Group: representation (simple115v2) + experiment_name (e.g. baseline or some parameter)
 # Run: algo_name ("RMAPPO") + run_name (e.g. parameter_value) + seed
 
+# Note: from here onwards: change counterattack scenario to 4P for baseline
