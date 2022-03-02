@@ -40,3 +40,9 @@ done
 # ---UPDATE---
 # Group: representation (simple115v2) + experiment_name (e.g. baseline or some parameter)
 # Run: algo_name ("RMAPPO") + run_name (e.g. parameter_value) + seed
+# ---UPDATE---
+# Now I use only one project name, devide different scenario (env_name) to differnt groups
+# I removed representation and algo_name, consider adding it to group name later
+# Project: gfootball_mappo
+# Group: env_name (academy_3_vs_1_with_keeper) + experiment_name (e.g. baseline or some parameter)
+# Run: experiment_name + run_name (e.g. parameter_value) + seed

@@ -97,11 +97,11 @@ def main(args):
     # wandb
     if all_args.use_wandb:
         run = wandb.init(config=all_args,
-                         project=all_args.env_name,
+                         project="gfootball_mappo",
                          entity=all_args.user_name,
                          notes=socket.gethostname(),
-                         group=all_args.representation + "_" + str(all_args.experiment_name),
-                         name=str(all_args.algorithm_name) + "_" + str(all_args.run_name),
+                         group=all_args.env_name + "_" + str(all_args.experiment_name),
+                         name=str(all_args.experiment_name) + "_" + str(all_args.run_name),
                          dir=str(run_dir),
                          job_type="training",
                          reinit=True)
