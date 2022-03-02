@@ -11,8 +11,8 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=1
-exp="baseline"
-run_name="20220302"
+exp="tuneParams"
+
 
 device=0
 for i in "${!envs[@]}"; do
@@ -29,29 +29,30 @@ for i in "${!envs[@]}"; do
   for lr in 0.0001 0.0005 0.0008 0.001; do
   for use_relu in true false; do
   for clip_param in 0.05 0.1 0.15 0.2 0.3 0.5; do
-  for gain in 0.01 1; do
-  for entropy_coef in 0.01 0.015 0.02; do
+    for gain in 0.01 1; do
+    for entropy_coef in 0.01 0.015 0.02; do
+    run_name="${ppo_epoch}_${num_mini_batch}_${lr}_${use_relu}_${clip_param}_${gain}_${entropy_coef}}"
+        for seed in $(seq ${seed_max}); do
+        # for ((seed=seed_max; seed>0; seed--))
 
-      for seed in $(seq ${seed_max}); do
-      # for ((seed=seed_max; seed>0; seed--))
+            # use experiment_name and run_name to describe experiment and run
+            # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
 
-          # use experiment_name and run_name to describe experiment and run
-          # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
+            CUDA_VISIBLE_DEVICES=$((device%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
+            --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
+            --number_of_left_players_agent_controls ${num_left_agents} \
+            --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
+            --n_rollout_threads 50 --num_mini_batch $num_mini_batch --episode_length 400 --num_env_steps 25000000 \
+            --ppo_epoch $ppo_epoch --wandb_name "football" --user_name "qingyuan_gao" \
+            --use_wandb false --save_interval 100 --log_interval 10 \
+            --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
+            --lr $lr --use_ReLU $use_relu --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
 
-          CUDA_VISIBLE_DEVICES=$((device%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
-          --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
-          --number_of_left_players_agent_controls ${num_left_agents} \
-          --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
-          --n_rollout_threads 50 --num_mini_batch $num_mini_batch --episode_length 400 --num_env_steps 25000000 \
-          --ppo_epoch $ppo_epoch --wandb_name "football" --user_name "qingyuan_gao" \
-          --use_wandb false --save_interval 100 --log_interval 10 \
-          --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
-          --lr $lr --use_ReLU $use_relu --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
-
-          ((device += 1))
-      done
-  done
-  done
+            ((device += 1))
+        done
+    done
+    done
+  wait
   done
   done
   done
