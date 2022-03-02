@@ -1,4 +1,6 @@
 #!/bin/sh
+
+# grid search 2,  see run_name for params
 envs=(
       "academy_counterattack_hard"
       "academy_pass_and_shoot_with_keeper"
@@ -11,8 +13,8 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=1
-exp="baseline"
-run_name="20220302"
+exp="gridSearch2"
+run_name="[lr,clip_param]"
 
 device=0
 for i in "${!envs[@]}"; do
@@ -24,13 +26,13 @@ for i in "${!envs[@]}"; do
   echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 
   # grid search
-  for ppo_epoch in 5 10 15 20; do
-  for num_mini_batch in 1 2 4; do
+#  for ppo_epoch in 5 10 15 20; do
+#  for num_mini_batch in 1 2 4; do
   for lr in 0.0001 0.0005 0.0008 0.001; do
-  for use_relu in true false; do
+#  for use_relu in true false; do
   for clip_param in 0.05 0.1 0.15 0.2 0.3 0.5; do
-  for gain in 0.01 1; do
-  for entropy_coef in 0.01 0.015 0.02; do
+#  for gain in 0.01 1; do
+#  for entropy_coef in 0.01 0.015 0.02; do
 
       for seed in $(seq ${seed_max}); do
       # for ((seed=seed_max; seed>0; seed--))
@@ -46,15 +48,16 @@ for i in "${!envs[@]}"; do
           --ppo_epoch $ppo_epoch --wandb_name "football" --user_name "qingyuan_gao" \
           --use_wandb false --save_interval 100 --log_interval 10 \
           --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
-          --lr $lr --use_ReLU $use_relu --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
+          --lr $lr --clip_param $clip_param &
+#          --gain $gain --entropy_coef $entropy_coef &
 
           ((device += 1))
       done
-  done
-  done
-  done
-  done
-  done
+#  done
+#  done
+#  done
+#  done
+#  done
   done
   done
 done
