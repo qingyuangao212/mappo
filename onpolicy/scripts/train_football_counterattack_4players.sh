@@ -1,10 +1,7 @@
 #!/bin/sh
-envs=("academy_3_vs_1_with_keeper"
-      "academy_corner"
+envs=(
       "academy_counterattack_easy"
       "academy_counterattack_hard"
-      "academy_pass_and_shoot_with_keeper"
-      "academy_run_pass_and_shoot_with_keeper"
 )
 
 # we control only left agents
@@ -13,7 +10,7 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=1
-exp="baseline"
+exp="4pbaseline"
 run_name="Test2"
 
 
@@ -21,7 +18,7 @@ for i in "${!envs[@]}"; do
 
   env=${envs[i]}
 
-  num_left_agents=${list_num_left_agents[i]}
+  num_left_agents=4
 
   echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 
@@ -48,17 +45,13 @@ done
 # train a total of {num_env_steps} steps, each episode has max length {episode_length}, use {n_rollout_threads} threads for training and {n_eval_rollout_threads} for eval
 # when training : log every {eval_interval} episodes, call eval every {eval_interval}
 # eval: run {eval_episodes} number of episodes
-
-
+#
 # =============== Calculations =====================
 # num_episodes = num_env_steps // episode_length // n_rollout_threads
 # num_train_logs = ( num_episodes // log_interval ) + 1
-
-
+#
 # =============== wandb info =====================
 # Group: env_name (e.g. academy_3_vs_1_with_keeper) + representation (simple115v2)
 # Run: algo_name ("RMAPPO") + experiment_name (e.g. "baseline" or parameter_name) + run_name (e.g. parameter_value)
-# ---UPDATE---
-# Group: representation (simple115v2) + experiment_name (e.g. baseline or some parameter)
-# Run: algo_name ("RMAPPO") + run_name (e.g. parameter_value) + seed
+
 

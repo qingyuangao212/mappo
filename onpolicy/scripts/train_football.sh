@@ -13,8 +13,8 @@ do
     # use experiment_name and run_name to describe experiment and run
     # in baseline there's no run, no need to add run_name
     echo "seed is ${seed}:"
-    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_popart --env_name ${env} \
-    --algorithm_name ${algo} --experiment_name ${exp} --run_name ${run_name} --representation ${rep} \
+    CUDA_VISIBLE_DEVICES=0 python train/train_football.py --use_popart --env_name ${env}\
+    --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}_seed${seed}" --representation ${rep} \
     --number_of_left_players_agent_controls ${num_left_agents} \
     --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
     --n_rollout_threads 50 --num_mini_batch 2 --episode_length 200 --num_env_steps 25000000 \
@@ -37,3 +37,6 @@ done
 # =============== wandb info =====================
 # Group: env_name (e.g. academy_3_vs_1_with_keeper) + representation (simple115v2)
 # Run: algo_name ("RMAPPO") + experiment_name (e.g. "baseline" or parameter_name) + run_name (e.g. parameter_value)
+# ---UPDATE---
+# Group: representation (simple115v2) + experiment_name (e.g. baseline or some parameter)
+# Run: algo_name ("RMAPPO") + run_name (e.g. parameter_value) + seed

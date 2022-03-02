@@ -14,18 +14,20 @@ from onpolicy.envs.football.footballEnv import football_env
 
 """Train script for MPEs."""
 
+
 def make_train_env(all_args):
     def get_env_fn(rank):
         def init_env():
             env = football_env(all_args)
             env.seed(all_args.seed + rank * 1000)
             return env
+
         return init_env
+
     if all_args.n_rollout_threads == 1:
         return DummyVecEnv([get_env_fn(0)])
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
-
 
 
 def make_eval_env(all_args):
@@ -34,7 +36,9 @@ def make_eval_env(all_args):
             env = football_env(all_args)
             env.seed(all_args.seed * 50000 + rank * 10000)
             return env
+
         return init_env
+
     if all_args.n_eval_rollout_threads == 1:
         return DummyVecEnv([get_env_fn(0)])
     else:
@@ -96,8 +100,8 @@ def main(args):
                          project=all_args.env_name,
                          entity=all_args.user_name,
                          notes=socket.gethostname(),
-                         name=str(all_args.algorithm_name) + "_" + str(all_args.experiment_name) + "_" + str(all_args.run_name),
-                         group=all_args.env_name + '_' + all_args.representation,
+                         group=all_args.representation + "_" + str(all_args.experiment_name),
+                         name=str(all_args.algorithm_name) + "_" + str(all_args.run_name),
                          dir=str(run_dir),
                          job_type="training",
                          reinit=True)
