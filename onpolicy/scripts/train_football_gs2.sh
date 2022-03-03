@@ -63,8 +63,7 @@ for i in "${!envs[@]}"; do
             done
     done
     done
-  wait
-  done
+    done
 #  done
 #  done
 #  done

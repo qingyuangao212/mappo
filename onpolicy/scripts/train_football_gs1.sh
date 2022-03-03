@@ -11,7 +11,7 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=1
-exp="gridSearch2"
+exp="gridSearch1"
 
 
 run=0   # used for assigning gpu_device and wait for multiprocessing end
@@ -25,14 +25,13 @@ for i in "${!envs[@]}"; do
 
 
 
-  # grid search
 #  for ppo_epoch in 10 15 20; do
 #  for num_mini_batch in 1 2 4; do
   for lr in 0.0001 0.0005 0.001; do
 #  for use_relu in true false; do
+  for gain in 0.01 1; do
   for clip_param in 0.1 0.2 0.3; do
-    for gain in 0.01 1; do
-    for entropy_coef in 0.005 0.01 0.015; do
+  for entropy_coef in 0.005 0.01 0.015; do
         for seed in $(seq ${seed_max}); do
         # for ((seed=seed_max; seed>0; seed--))
 
@@ -55,16 +54,17 @@ for i in "${!envs[@]}"; do
             echo "=================================================="
             echo "run_number_${run}: ${run_name}"
 
-            # run 16 multiprocesses at a time
+            # run 12 multiprocesses at a time
             if (( run % 12 == 0 ));
-              then wait
+              then
+                echo "run ${run}: waiting"
+                wait
             fi
 
 
             done
-    done
-    done
-  wait
+  done
+  done
   done
   done
 #  done
