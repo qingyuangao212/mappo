@@ -1,6 +1,4 @@
 #!/bin/sh
-
-# grid search 1, see run_name for params
 envs=(
       "academy_counterattack_hard"
       "academy_pass_and_shoot_with_keeper"
@@ -13,52 +11,64 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=1
-exp="gridSearch1"
-run_name="[ppoEpoch,numMiniBatch]"
+exp="tuneParams"
 
-device=0
+
+run=0   # used for assigning gpu_device and wait for multiprocessing end
+
+echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}"
+
 for i in "${!envs[@]}"; do
 
   env=${envs[i]}
   num_left_agents=${list_num_left_agents[i]}
 
 
-  echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 
   # grid search
-  for ppo_epoch in 5 10 15 20; do
-  for num_mini_batch in 1 2 4; do
-#  for lr in 0.0001 0.0005 0.0008 0.001; do
+#  for ppo_epoch in 10 15 20; do
+#  for num_mini_batch in 1 2 4; do
+  for lr in 0.0001 0.0005 0.001; do
 #  for use_relu in true false; do
-#  for clip_param in 0.05 0.1 0.15 0.2 0.3 0.5; do
-#  for gain in 0.01 1; do
-#  for entropy_coef in 0.01 0.015 0.02; do
+  for clip_param in 0.1 0.2 0.3; do
+    for gain in 0.01 1; do
+    for entropy_coef in 0.005 0.01 0.015; do
+        for seed in $(seq ${seed_max}); do
+        # for ((seed=seed_max; seed>0; seed--))
 
-      for seed in $(seq ${seed_max}); do
-      # for ((seed=seed_max; seed>0; seed--))
+            ((run += 1))
 
-          # use experiment_name and run_name to describe experiment and run
-          # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
+            run_name="${lr}_${clip_param}_${gain}_${entropy_coef}"
+            echo "=================================================="
+            echo "run_number_${run}: ${run_name}"
+            # use experiment_name and run_name to describe experiment and run
+            # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
+            CUDA_VISIBLE_DEVICES=$((run%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
+            --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
+            --number_of_left_players_agent_controls "${num_left_agents}" \
+            --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
+            --n_rollout_threads 50 --num_mini_batch 2 --episode_length 200 --num_env_steps 25000000 \
+            --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
+            --use_wandb false --save_interval 100 --log_interval 10 \
+            --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
+            --lr $lr --use_ReLU --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
 
-          CUDA_VISIBLE_DEVICES=$((device%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
-          --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
-          --number_of_left_players_agent_controls ${num_left_agents} \
-          --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
-          --n_rollout_threads 50 --num_mini_batch $num_mini_batch --episode_length 400 --num_env_steps 25000000 \
-          --ppo_epoch $ppo_epoch --wandb_name "football" --user_name "qingyuan_gao" \
-          --use_wandb false --save_interval 100 --log_interval 10 \
-          --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
-#          --lr $lr --use_ReLU --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
 
-          ((device += 1))
-      done
-#  done
-#  done
-#  done
-#  done
-#  done
+            # run 16 multiprocesses at a time
+            if (( run % 12 == 0 ));
+              then wait
+            fi
+
+
+            done
+    done
+    done
+  wait
   done
   done
+  done
+#  done
+#  done
 done
 
 
