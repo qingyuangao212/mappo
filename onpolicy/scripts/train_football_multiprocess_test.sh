@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# this should run 6 processes at a time, 3 on each GPU
+
 envs=(
       "academy_counterattack_hard"
       "academy_pass_and_shoot_with_keeper"
@@ -55,7 +58,7 @@ for i in "${!envs[@]}"; do
 
 
             # run 16 multiprocesses at a time
-            if (( run % 16 == 0 ));
+            if (( run % 6 == 0 ));
               then wait
             fi
 
