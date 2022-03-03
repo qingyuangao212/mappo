@@ -39,8 +39,7 @@ for i in "${!envs[@]}"; do
             ((run += 1))
 
             run_name="${ppo_epoch}_${num_mini_batch}_${lr}_${use_relu}_${clip_param}_${gain}_${entropy_coef}}"
-            echo "=================================================="
-            echo "run_number_${run}: ${run_name}"
+
             # use experiment_name and run_name to describe experiment and run
             # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
             CUDA_VISIBLE_DEVICES=$((run%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
@@ -52,6 +51,11 @@ for i in "${!envs[@]}"; do
             --use_wandb false --save_interval 100 --log_interval 10 \
             --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
             --lr $lr --use_ReLU --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
+
+
+            # record run running
+            echo "=================================================="
+            echo "run_number_${run}: ${run_name}"
 
 
             # run 16 multiprocesses at a time
