@@ -10,29 +10,27 @@ list_num_left_agents=(4 2 2)
 rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
-seed_max=1
+seed_max=3
 exp="gridSearch1"
 
 
 run=0   # used for assigning gpu_device and wait for multiprocessing end
 
-echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}"
-
+for seed in $(seq ${seed_max}); do
 for i in "${!envs[@]}"; do
 
   env=${envs[i]}
   num_left_agents=${list_num_left_agents[i]}
 
+  echo "env is ${env}, representation is ${rep}, algo is ${algo}, exp is ${exp}"
 
 
-#  for ppo_epoch in 10 15 20; do
-#  for num_mini_batch in 1 2 4; do
+# a total 54 runs
+
   for lr in 0.0001 0.0005 0.001; do
-#  for use_relu in true false; do
   for gain in 0.01 1; do
-  for clip_param in 0.1 0.2 0.3; do
-  for entropy_coef in 0.005 0.01 0.015; do
-        for seed in $(seq ${seed_max}); do
+  for clip_param in 0.2 0.1 0.3; do
+  for entropy_coef in 0.01 0.005 0.015; do
         # for ((seed=seed_max; seed>0; seed--))
 
             ((run += 1))
@@ -45,11 +43,11 @@ for i in "${!envs[@]}"; do
             --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
             --number_of_left_players_agent_controls "${num_left_agents}" \
             --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
-            --n_rollout_threads 50 --num_mini_batch 2 --episode_length 200 --num_env_steps 25000000 \
+            --n_rollout_threads 50 --num_mini_batch 4 --episode_length 200 --num_env_steps 25000000 \
             --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
-            --use_wandb false --save_interval 100 --log_interval 10 \
-            --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints \
-            --lr $lr --use_ReLU --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
+            --use_wandb true --save_interval 100 --log_interval 10 \
+            --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 100 --rewards scoring,checkpoints \
+            --lr $lr --clip_param $clip_param --gain $gain --entropy_coef $entropy_coef &
 
             echo "=================================================="
             echo "run_number_${run}: ${run_name}"
