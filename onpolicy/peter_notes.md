@@ -52,11 +52,11 @@ actions, action_log_probs = self.act(actor_features, available_actions, determin
 # Buffer
 ### `recurrent_generator()` (perform one train)
    ```python
-   batch_size = n_rollout_threads * episode_length * num_agents
+   batch_size = n_rollout_threads * episode_length * num_agents # total num of samples
    data_chunks = batch_size // data_chunk_length  # [C=r*T*M/L]
-   mini_batch_size = data_chunks // num_mini_batch
+   mini_batch_size = data_chunks // num_mini_batch  # size of each mini_batch in terms of data chunk
    ```
-each ppo update uses data (mini_batch_size * data_chunks) steps. 
+each ppo update uses data (mini_batch_size * data_chunk_length) steps. 
 We need **data_chunk** because we need consecutive steps to train the RNN
 
 trainer.train() (`r_mappo.py`) calls `data_generator = buffer.recurrent_generator(advantages, self.num_mini_batch, self.data_chunk_length)`
