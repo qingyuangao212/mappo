@@ -1,16 +1,15 @@
 #!/bin/sh
 envs=(
-      "academy_counterattack_hard"
       "academy_pass_and_shoot_with_keeper"
       "academy_run_pass_and_shoot_with_keeper"
 )
 
 # we control only left agents
-list_num_left_agents=(4 2 2)
+list_num_left_agents=(2 2)
 rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
-seed_max=1
+seed_max=3
 exp="gridSearch2"
 
 
@@ -37,7 +36,7 @@ for i in "${!envs[@]}"; do
 
             ((run += 1))
 
-            run_name="${ppo_epoch}_${num_mini_batch}"
+            run_name="${ppo_epoch}_${num_mini_batch}_run${run}"
 
             # use experiment_name and run_name to describe experiment and run
             # set CUDA_VISIBLE_DEVICES to be remainder of seed devided by number of gpus
@@ -45,15 +44,15 @@ for i in "${!envs[@]}"; do
             --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
             --number_of_left_players_agent_controls ${num_left_agents} \
             --number_of_right_players_agent_controls ${num_right_agents} --seed "${seed}" \
-            --n_rollout_threads 50 --num_mini_batch $num_mini_batch --episode_length 200 --num_env_steps 20000000 \
+            --n_rollout_threads 50 --num_mini_batch $num_mini_batch --episode_length 200 --num_env_steps 25000000 \
             --ppo_epoch $ppo_epoch --wandb_name "football" --user_name "qingyuan_gao" \
-            --use_wandb true --save_interval 100 --log_interval 10 \
-            --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
+            --save_interval 100 --log_interval 10 \
+            --use_wandb --use_eval --eval_interval 20 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
 
             echo "=================================================="
             echo "run_number_${run}: ${run_name}"
 
-            # run 16 multiprocesses at a time
+            # run 14 multiprocesses at a time
             if (( run % 14 == 0 ));
               then wait
             fi
