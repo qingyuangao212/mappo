@@ -38,11 +38,10 @@ env = create_environment("academy_counterattack_hard",
                          number_of_right_players_agent_controls=0,
                          representation='simple115v2',
                          rewards='scoring,checkpoints',
-                         write_goal_dumps=True,
-                         write_full_episode_dumps=True,
-                         render=True,
-                         write_video=True,
-                         logdir='./wandb'
+                         # write_goal_dumps=True,
+                         # write_full_episode_dumps=True,
+                         # write_video=True,
+                         # logdir='./wandb'
                          )
 
 # copied from FootballEnv
@@ -80,4 +79,5 @@ for run in range(runs):
         obs, dones, rewards, infos = env.step(action)
         print(dones)
         # env.render()
-        # img = env.unwrapped.observation()[0]["frame"]
+        img = env.unwrapped.observation()[0]["frame"]
+        print(img)
