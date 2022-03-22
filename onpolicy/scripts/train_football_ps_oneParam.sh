@@ -10,7 +10,7 @@ seed=1
 exp="OneParamSearch"
 
 
-run=0   # used for assigning gpu_device and wait for multiprocessing end
+run=0   # used for gpu_device and wait for multiprocessing end
 
 env="academy_pass_and_shoot_with_keeper"
 num_left_agents=2
