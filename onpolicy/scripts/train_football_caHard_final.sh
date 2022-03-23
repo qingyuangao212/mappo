@@ -5,7 +5,7 @@ rep="simple115v2"
 num_right_agents=0
 algo="rmappo"
 seed_max=6
-exp="final(gs2)"
+exp="finalGS"
 
 
 run=0
@@ -20,10 +20,10 @@ for ((seed=seed_start+seed_max; seed>seed_start; seed--)); do
     --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
     --number_of_left_players_agent_controls ${num_left_agents} \
     --number_of_right_players_agent_controls ${num_right_agents} --seed $seed \
-    --n_rollout_threads 50 --num_mini_batch 2 --episode_length 200 --num_env_steps 25000000 \
-    --ppo_epoch 10 --wandb_name "football" --user_name "qingyuan_gao" \
+    --n_rollout_threads 50 --num_mini_batch 4 --episode_length 200 --num_env_steps 25000000 \
+    --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
     --save_interval 100 --log_interval 20 \
-    --lr 0.0001 --entropy_coef 0.01 --gain 1 --clip_param 0.2 \
+    --lr 0.0005 --clip_param 0.3 --gain 0.01 --entropy_coef 0.01 \
     --use_wandb --use_eval --eval_interval 40 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
     echo "=================================================="
     echo "run_number_${run}: ${run_name}"
@@ -37,12 +37,44 @@ for ((seed=seed_start+seed_max; seed>seed_start; seed--)); do
     --n_rollout_threads 50 --num_mini_batch 4 --episode_length 200 --num_env_steps 25000000 \
     --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
     --save_interval 100 --log_interval 20 \
-    --lr 0.0005 --entropy_coef 0.01 --gain 0.01 --clip_param 0.3 \
+    --lr 0.0001 --clip_param 0.1 --gain 1 --entropy_coef 0.01 \
     --use_wandb --use_eval --eval_interval 40 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
     echo "=================================================="
     echo "run_number_${run}: ${run_name}"
 
+done
 
+wait
+
+for ((seed=seed_start+seed_max; seed>seed_start; seed--)); do
+
+    ((run += 1))
+    run_name="seed${seed}_param3"
+    CUDA_VISIBLE_DEVICES=$((run%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
+    --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
+    --number_of_left_players_agent_controls ${num_left_agents} \
+    --number_of_right_players_agent_controls ${num_right_agents} --seed $seed \
+    --n_rollout_threads 50 --num_mini_batch 6 --episode_length 200 --num_env_steps 25000000 \
+    --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
+    --save_interval 100 --log_interval 20 \
+    --lr 0.0005 --clip_param 0.3 --gain 0.01 --entropy_coef 0.01 \
+    --use_wandb --use_eval --eval_interval 40 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
+    echo "=================================================="
+    echo "run_number_${run}: ${run_name}"
+
+    ((run += 1))
+    run_name="seed${seed}_param4"
+    CUDA_VISIBLE_DEVICES=$((run%2)) python3 train/train_football.py --use_valuenorm --env_name ${env} \
+    --algorithm_name ${algo} --experiment_name ${exp} --run_name "${run_name}" --representation ${rep} \
+    --number_of_left_players_agent_controls ${num_left_agents} \
+    --number_of_right_players_agent_controls ${num_right_agents} --seed $seed \
+    --n_rollout_threads 50 --num_mini_batch 6 --episode_length 200 --num_env_steps 25000000 \
+    --ppo_epoch 15 --wandb_name "football" --user_name "qingyuan_gao" \
+    --save_interval 100 --log_interval 20 \
+    --lr 0.0001 --clip_param 0.1 --gain 1 --entropy_coef 0.01 \
+    --use_wandb --use_eval --eval_interval 40 --eval_episodes 100 --n_eval_rollout_threads 50 --rewards scoring,checkpoints &
+    echo "=================================================="
+    echo "run_number_${run}: ${run_name}"
 
 done
 
